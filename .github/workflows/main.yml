@@ -37,19 +37,19 @@ jobs:
 
           docker build -f ./services/inventory-service/Dockerfile -t inventory-service ./services/inventory-service
 
-          docker tag shopsphere_inventory:latest 058835008914.dkr.ecr.ap-south-1.amazonaws.com/shopsphere_inventory:latest
+          docker tag inventory-service:latest 058835008914.dkr.ecr.ap-south-1.amazonaws.com/shopsphere_inventory:latest
 
           docker push 058835008914.dkr.ecr.ap-south-1.amazonaws.com/shopsphere_inventory:latest
          
           docker build -f ./services/order-service/Dockerfile -t order-service ./services/order-service
 
-          docker tag shopsphere_order:latest 058835008914.dkr.ecr.ap-south-1.amazonaws.com/shopsphere_order:latest
+          docker tag order-service:latest 058835008914.dkr.ecr.ap-south-1.amazonaws.com/shopsphere_order:latest
 
           docker push 058835008914.dkr.ecr.ap-south-1.amazonaws.com/shopsphere_order:latest
 
           docker build -f ./services/product-service/Dockerfile -t product-service ./services/product-service
 
-          docker tag shopsphere_product:latest 058835008914.dkr.ecr.ap-south-1.amazonaws.com/shopsphere_product:latest
+          docker tag product-service:latest 058835008914.dkr.ecr.ap-south-1.amazonaws.com/shopsphere_product:latest
 
           docker push 058835008914.dkr.ecr.ap-south-1.amazonaws.com/shopsphere_product:latest
       - name: Configure kubectl
