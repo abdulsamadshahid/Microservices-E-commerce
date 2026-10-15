@@ -29,7 +29,7 @@ jobs:
         run: |
           aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin 058835008914.dkr.ecr.ap-south-1.amazonaws.com
 
-          docker build -f ./Dockerfile.frontend -t shopsphere_frontend ./frontend
+          docker build -f ./Dockerfile.frontend -t shopsphere_frontend .
 
           docker tag shopsphere_frontend:latest 058835008914.dkr.ecr.ap-south-1.amazonaws.com/shopsphere_frontend:latest
 
