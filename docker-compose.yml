@@ -1,0 +1,164 @@
+version: '3.8'
+
+services:
+  # =========================================================================
+  # PostgreSQL Database
+  # =========================================================================
+  postgres:
+    image: postgres:16-alpine
+    container_name: shopsphere-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-shopsphere}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-secret_local_dev_password}
+      POSTGRES_DB: ${POSTGRES_DB:-shopsphere_db}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-shopsphere} -d ${POSTGRES_DB:-shopsphere_db}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+    networks:
+      - shopsphere-network
+
+  # =========================================================================
+  # Product Service (Catalog & Search)
+  # =========================================================================
+  product-service:
+    build:
+      context: ./services/product-service
+      dockerfile: Dockerfile
+    container_name: shopsphere-product-service
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 4001
+      LOG_LEVEL: info
+      CORS_ORIGIN: "*"
+      DATABASE_URL: postgres://${POSTGRES_USER:-shopsphere}:${POSTGRES_PASSWORD:-secret_local_dev_password}@postgres:5432/${POSTGRES_DB:-shopsphere_db}
+    ports:
+      - "4001:4001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:4001/health/live"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+    networks:
+      - shopsphere-network
+
+  # =========================================================================
+  # Inventory Service (Stock & Atomic Reservations)
+  # =========================================================================
+  inventory-service:
+    build:
+      context: ./services/inventory-service
+      dockerfile: Dockerfile
+    container_name: shopsphere-inventory-service
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 4002
+      LOG_LEVEL: info
+      CORS_ORIGIN: "*"
+      DATABASE_URL: postgres://${POSTGRES_USER:-shopsphere}:${POSTGRES_PASSWORD:-secret_local_dev_password}@postgres:5432/${POSTGRES_DB:-shopsphere_db}
+      ADMIN_API_SECRET: ${ADMIN_API_SECRET:-dev_inventory_admin_secret_key_change_in_prod}
+    ports:
+      - "4002:4002"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:4002/health/live"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+    networks:
+      - shopsphere-network
+
+  # =========================================================================
+  # Order Service (Auth, Order Placement, & Compensation)
+  # =========================================================================
+  order-service:
+    build:
+      context: ./services/order-service
+      dockerfile: Dockerfile
+    container_name: shopsphere-order-service
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 4003
+      LOG_LEVEL: info
+      CORS_ORIGIN: "*"
+      DATABASE_URL: postgres://${POSTGRES_USER:-shopsphere}:${POSTGRES_PASSWORD:-secret_local_dev_password}@postgres:5432/${POSTGRES_DB:-shopsphere_db}
+      JWT_SECRET: ${JWT_SECRET:-shopsphere_dev_jwt_secret_key_change_in_production_min_32_chars}
+      JWT_EXPIRES_IN: "24h"
+      PRODUCT_SERVICE_URL: http://product-service:4001
+      INVENTORY_SERVICE_URL: http://inventory-service:4002
+    ports:
+      - "4003:4003"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      product-service:
+        condition: service_healthy
+      inventory-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:4003/health/live"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+    networks:
+      - shopsphere-network
+
+  # =========================================================================
+  # Frontend & API Gateway (Web UI)
+  # =========================================================================
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: shopsphere-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      PRODUCT_SERVICE_URL: http://product-service:4001
+      INVENTORY_SERVICE_URL: http://inventory-service:4002
+      ORDER_SERVICE_URL: http://order-service:4003
+    depends_on:
+      product-service:
+        condition: service_healthy
+      inventory-service:
+        condition: service_healthy
+      order-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/health/live"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+    networks:
+      - shopsphere-network
+
+networks:
+  shopsphere-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+    driver: local
