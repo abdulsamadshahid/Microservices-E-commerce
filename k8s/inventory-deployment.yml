@@ -16,23 +16,23 @@ spec:
     spec:
       containers:
       - name: inventory-pod
-        image: inventory:1.14.2
+        image: 058835008914.dkr.ecr.ap-south-1.amazonaws.com/shopsphere_inventory:latest
         ports:
         - containerPort: 4002
-    env:
-      - name: NODE_ENV
-        value: "production"
-      - name: LOG_LEVEL
-        value: "info"
-      - name: CORS_ORIGIN
-        value: "*"
-      - name: DATABASE_URL
-        valueFrom:
-          secretKeyRef:
-            name: secrets
-            key: DATABASE_URL
-      - name: ADMIN_API_SECRET
-        valueFrom:
-          secretKeyRef:
-            name: secrets
-            key: ADMIN_API_SECRET
+      env:
+        - name: NODE_ENV
+          value: "production"
+        - name: LOG_LEVEL
+          value: "info"
+        - name: CORS_ORIGIN
+          value: "*"
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: secrets
+              key: DATABASE_URL
+        - name: ADMIN_API_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: secrets
+              key: ADMIN_API_SECRET
