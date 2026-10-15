@@ -1,0 +1,62 @@
+name: ShopeSphere
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  Configure_AWS_Credentials:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v6.2.4
+        with:
+          role-to-assume: arn:aws:iam::058835008914:role/github_actions_ecr_permission
+          aws-region: ap-south-1
+
+      - name: Check AWS identity
+        run: aws sts get-caller-identity
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Build and Push Docker Images
+        run: |
+          aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin 058835008914.dkr.ecr.ap-south-1.amazonaws.com
+
+          docker build -f ./Dockerfile.frontend -t shopsphere_frontend ./frontend
+
+          docker tag shopsphere_frontend:latest 058835008914.dkr.ecr.ap-south-1.amazonaws.com/shopsphere_frontend:latest
+
+          docker push 058835008914.dkr.ecr.ap-south-1.amazonaws.com/shopsphere_frontend:latest
+
+          docker build -f ./services/inventory-service/Dockerfile -t inventory-service ./services/inventory-service
+
+          docker tag shopsphere_inventory:latest 058835008914.dkr.ecr.ap-south-1.amazonaws.com/shopsphere_inventory:latest
+
+          docker push 058835008914.dkr.ecr.ap-south-1.amazonaws.com/shopsphere_inventory:latest
+         
+          docker build -f ./services/order-service/Dockerfile -t order-service ./services/order-service
+
+          docker tag shopsphere_order:latest 058835008914.dkr.ecr.ap-south-1.amazonaws.com/shopsphere_order:latest
+
+          docker push 058835008914.dkr.ecr.ap-south-1.amazonaws.com/shopsphere_order:latest
+
+          docker build -f ./services/product-service/Dockerfile -t product-service ./services/product-service
+
+          docker tag shopsphere_product:latest 058835008914.dkr.ecr.ap-south-1.amazonaws.com/shopsphere_product:latest
+
+          docker push 058835008914.dkr.ecr.ap-south-1.amazonaws.com/shopsphere_product:latest
+      - name: Configure kubectl
+        run: |
+          aws eks update-kubeconfig --region ap-south-1 --name ecommerce-eks
+      - name: Verify EKS connection
+        run: kubectl get nodes
+      - name: Apply Kubernetes
+        run: |
+          kubectl apply -f k8s
