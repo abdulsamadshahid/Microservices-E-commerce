@@ -6,7 +6,9 @@ coverage/
 *.log
 .env*
 !.env.example
-.env.example
+./services/inventory-service/env.example
+./services/order-service/env.example
+./services/product-service/env.example
 k8s/secrets.yml
 
 # Terraform
