@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: order-deployment
+  labels:
+    service: order
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      service: order
+  template:
+    metadata:
+      labels:
+        service: order
+    spec:
+      containers:
+      - name: order-pod
+        image: order:1.14.2
+        ports:
+        - containerPort: 4003
+    env:
+      - name: NODE_ENV
+        value: "production"
+      - name: LOG_LEVEL
+        value: "info"
+      - name: CORS_ORIGIN
+        value: "*"
+      - name: JWT_EXPIRES_IN
+        value: "24h"
+      - name: PRODUCT_SERVICE_URL
+        value: "http://product-service:4001"
+      - name: INVENTORY_SERVICE_URL
+        value: "http://inventory-service:4002"
+      - name: DATABASE_URL
+        valueFrom:
+          secretKeyRef:
+            name: secrets
+            key: DATABASE_URL
+      - name: JWT_SECRET
+        valueFrom:
+          secretKeyRef:
+            name: secrets
+            key: JWT_SECRET

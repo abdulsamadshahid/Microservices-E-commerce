@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: product-deployment
+  labels:
+    service: product
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      service: product
+  template:
+    metadata:
+      labels:
+        service: product
+    spec:
+      containers:
+      - name: product-pod
+        image: product:1.14.2
+        ports:
+        - containerPort: 4001
+    env:
+      - name: NODE_ENV
+        value: "production"
+      - name: LOG_LEVEL
+        value: "info"
+      - name: CORS_ORIGIN
+        value: "*"
+      - name: DATABASE_URL
+        valueFrom:
+          secretKeyRef:
+            name: secrets
+            key: DATABASE_URL
