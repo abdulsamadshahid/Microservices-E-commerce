@@ -1,10 +1,10 @@
 # ShopSphere — Microservices E-Commerce on AWS EKS
 
-ShopSphere is a microservices-based e-commerce application that I deployed on AWS EKS as part of my hands-on DevOps learning.
+ShopSphere is a microservices-based e-commerce application deployed on AWS EKS as part of my hands-on DevOps learning journey.
 
-The main goal of this project was to work through the complete deployment process, from building and pushing Docker images to deploying microservices on Kubernetes and monitoring resource usage.
+The project covers the deployment lifecycle, from building and pushing Docker images to deploying microservices on Kubernetes, implementing GitOps with Argo CD, and monitoring resource usage.
 
-I also spent time troubleshooting deployment issues instead of just focusing on getting everything running.
+A major focus was troubleshooting deployment issues and understanding how the different components work together.
 
 ## Tech Stack
 
@@ -12,8 +12,9 @@ I also spent time troubleshooting deployment issues instead of just focusing on 
 - **Amazon ECR** — Docker image registry
 - **Docker** — Containerization
 - **Terraform** — Infrastructure as Code
-- **GitHub Actions** — CI/CD automation
-- **Kubernetes** — Application deployments and services
+- **GitHub Actions** — CI/CD automation and image publishing
+- **Argo CD** — GitOps-based Kubernetes deployment and synchronization
+- **Kubernetes** — Application deployments, services, and configuration
 - **Helm** — Monitoring stack installation
 - **Prometheus** — Metrics collection
 - **Grafana** — Monitoring dashboards
@@ -21,7 +22,7 @@ I also spent time troubleshooting deployment issues instead of just focusing on 
 
 ## Architecture Overview
 
-The project uses a microservices architecture with separate frontend and backend services.
+The application follows a microservices architecture with separate frontend and backend services.
 
 - Frontend
 - Product service
@@ -29,65 +30,84 @@ The project uses a microservices architecture with separate frontend and backend
 - Inventory service
 - PostgreSQL database
 
-The application runs on Amazon EKS, with Kubernetes Services providing communication between the components.
+The application runs on Amazon EKS, with Kubernetes Services enabling communication between components.
 
 ### Deployment Workflow
 
 1. Code is pushed to GitHub.
-2. GitHub Actions builds the Docker images.
-3. The images are pushed to Amazon ECR.
-4. GitHub Actions updates the Kubernetes deployment using the manifests in the repository.
-5. The application runs on EKS.
-6. Prometheus collects monitoring metrics, which I view through Grafana dashboards.
+2. GitHub Actions builds Docker images and pushes them to Amazon ECR.
+3. Kubernetes manifests define the desired application state.
+4. Argo CD synchronizes Kubernetes manifests from GitHub to the EKS cluster.
+5. Kubernetes runs and manages the application workloads.
+6. Prometheus collects metrics, which are visualized through Grafana dashboards.
+
+GitHub Actions handles CI and image publishing, while Argo CD handles GitOps-based deployment synchronization.
+
+## GitOps with Argo CD
+
+I integrated Argo CD with my GitHub repository to automate the synchronization of Kubernetes manifests with my EKS cluster.
+
+This reduced the need to manually run `kubectl apply` whenever I changed deployment manifests.
+
+Key concepts explored:
+
+- Connecting a Git repository to Argo CD
+- Automated synchronization of Kubernetes manifests
+- Self-healing and pruning
+- Monitoring application health and synchronization status
+
+This helped me understand how GitOps simplifies deployment management and keeps the cluster aligned with the desired state defined in Git.
 
 ## Monitoring
 
 I deployed Prometheus and Grafana using Helm.
 
-The monitoring setup lets me inspect Kubernetes resource utilization and view CPU and memory metrics through Grafana.
+The monitoring setup allows me to inspect Kubernetes resource utilization and visualize CPU and memory metrics through Grafana dashboards.
 
-This was also an opportunity to understand the difference between deploying an application and verifying its health after deployment.
+This reinforced the importance of verifying application and infrastructure health after deployment.
 
 ## Troubleshooting
 
-One of the issues I encountered was Kubernetes pods failing to start because of Secret configuration problems.
+One issue I encountered involved Kubernetes Pods failing to start because of Secret configuration problems.
 
-I investigated the pod status and configuration, corrected the issue, and verified that the affected workloads could start successfully.
+I investigated the Pod status and configuration, corrected the issue, and verified that the affected workloads could start successfully.
 
-Working through issues like this helped me better understand Kubernetes dependencies and why checking pod events and logs is important when a deployment fails.
+I also worked through deployment workflow challenges and explored how Argo CD simplifies Kubernetes manifest synchronization.
+
+These experiences strengthened my understanding of Kubernetes dependencies, configuration management, and troubleshooting using Pod events and logs.
 
 ## What I Learned
 
 - Deploying a microservices application on AWS EKS
-- Automating Docker image builds and pushes with GitHub Actions
-- Working with Amazon ECR and Kubernetes manifests
-- Managing application configuration through Kubernetes Secrets
-- Installing monitoring tools with Helm
+- Building and publishing Docker images using GitHub Actions and Amazon ECR
+- Provisioning infrastructure using Terraform
+- Managing Kubernetes Deployments, Services, and Secrets
+- Implementing GitOps workflows with Argo CD
+- Understanding automated sync, self-healing, and pruning
+- Installing monitoring tools using Helm
 - Using Prometheus and Grafana to inspect resource utilization
 - Troubleshooting Kubernetes deployment failures
 
 ## Running the Project
 
-The infrastructure and application deployment depend on the AWS resources, IAM permissions, configuration, and secrets used for this project.
-
 To reproduce the deployment:
 
 1. Configure AWS credentials and the required IAM permissions.
-2. Provision the infrastructure using the Terraform configuration.
-3. Configure the required application secrets without committing sensitive values.
-4. Build and push the application images to Amazon ECR using the GitHub Actions workflow.
-5. Deploy the Kubernetes manifests to the EKS cluster.
+2. Provision the infrastructure using Terraform.
+3. Configure application secrets securely without committing sensitive values.
+4. Build and push application images to Amazon ECR using GitHub Actions.
+5. Configure Argo CD to access the Git repository and synchronize the Kubernetes manifests.
 6. Install the monitoring stack using Helm.
 
-Review the Terraform configuration, Kubernetes manifests, and GitHub Actions workflow before deploying to your own AWS account.
+Review the Terraform configuration, Kubernetes manifests, GitHub Actions workflows, and Argo CD configuration before deploying to your own AWS account.
 
 **Important:** AWS resources can incur charges. Review the resources created by Terraform and clean them up when they are no longer needed.
 
-## Next Steps
+## Future Improvements
 
-- Explore GitOps deployment with Argo CD.
 - Improve monitoring with additional dashboards and alerts.
-- Explore application-level metrics for the backend services.
+- Explore application-level metrics for backend services.
+- Expand GitOps workflows and secret management practices.
 
 ---
 
