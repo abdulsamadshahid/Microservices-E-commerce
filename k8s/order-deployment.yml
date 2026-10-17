@@ -36,7 +36,7 @@ spec:
             valueFrom:
               secretKeyRef:
                 name: secrets
-                key: DATABASE_URL
+                key: DATABASE_URL_ord
           - name: JWT_SECRET
             valueFrom:
               secretKeyRef:

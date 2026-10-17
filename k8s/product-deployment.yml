@@ -26,8 +26,8 @@ spec:
             value: "info"
           - name: CORS_ORIGIN
             value: "*"
-          - name: DATABASE_URL
+          - name: DATABASE_URL_pro
             valueFrom:
               secretKeyRef:
                 name: secrets
-                key: DATABASE_URL
+                key: DATABASE_URL_pro

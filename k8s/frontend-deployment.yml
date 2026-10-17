@@ -21,10 +21,10 @@ spec:
         - containerPort: 3000
         env:
           - name: NODE_ENV
-            vlue: "production"
+            value: "production"
           - name: PRODUCT_SERVICE_URL
-            vlue: "http://product-service:4001"
+            value: "http://product-service:4001"
           - name: INVENTORY_SERVICE_URL
-            vlue: "http://inventory-service:4002"
+            value: "http://inventory-service:4002"
           - name: ORDER_SERVICE_URL
-            vlue: "http://order-service:4003"
+            value: "http://order-service:4003"

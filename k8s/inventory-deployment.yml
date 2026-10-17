@@ -30,7 +30,7 @@ spec:
             valueFrom:
               secretKeyRef:
                 name: secrets
-                key: DATABASE_URL
+                key: DATABASE_URL_inv
           - name: ADMIN_API_SECRET
             valueFrom:
               secretKeyRef:
